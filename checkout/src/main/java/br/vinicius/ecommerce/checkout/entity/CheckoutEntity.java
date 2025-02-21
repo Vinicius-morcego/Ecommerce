@@ -1,17 +1,19 @@
 package br.vinicius.ecommerce.checkout.entity;
 
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 
 
+import lombok.Builder;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
 
-@Entity
+
+@Builder
 @Data
+@Entity
 public class CheckoutEntity {
 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private Long id;
 
