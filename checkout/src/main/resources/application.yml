@@ -5,14 +5,14 @@ spring:
     password: admin
     driver-class-name: org.postgresql.Driver
     hikari:
-      connection-test-query: SELECT 1
+      connection-test-query: select 1
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: create-drop
+      dialect: org.hibernate.dialect.PostgreSQLDialect
     properties:
       hibernate:
-        default_schema: checkout
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
         show_sql: true
         use_sql_comments: true
