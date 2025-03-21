@@ -1,9 +1,12 @@
 package br.vinicius.ecommerce.checkout.service;
 
 import br.vinicius.ecommerce.checkout.entity.CheckoutEntity;
+import br.vinicius.ecommerce.checkout.event.CheckoutCreatedEvent;
 import br.vinicius.ecommerce.checkout.repository.CheckoutRepository;
 import br.vinicius.ecommerce.checkout.resource.checkout.CheckoutRequest;
+import br.vinicius.ecommerce.checkout.streaming.CheckoutCreatedSource;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -14,6 +17,7 @@ import java.util.UUID;
 public class CheckoutServiceImpl implements CheckoutService{
 
     private final CheckoutRepository checkoutRepository;
+    private final CheckoutCreatedSource checkoutCreatedSource;
 
     @Override
     public Optional<CheckoutEntity> create(CheckoutRequest checkoutRequest) {
@@ -21,6 +25,13 @@ public class CheckoutServiceImpl implements CheckoutService{
                 .code(UUID.randomUUID().toString())
                 .status(CheckoutEntity.Status.CREATED)
                 .build();
-        return Optional.of(checkoutRepository.save(checkoutEntity));
+        final CheckoutEntity entity = checkoutRepository.save(checkoutEntity);
+
+        final CheckoutCreatedEvent event = CheckoutCreatedEvent.newBuilder()
+                .setCheckoutCode(entity.getCode())
+                .setStatus(entity.getStatus())
+                .build();
+        checkoutCreatedSource.output().send(MessageBuilder.withPayload(event).build());
+        return Optional.of(entity);
     }
 }
