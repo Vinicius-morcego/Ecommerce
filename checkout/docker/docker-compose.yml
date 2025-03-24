@@ -22,33 +22,41 @@ services:
     image: confluentinc/cp-zookeeper:latest
     hostname: zookeeper
     container_name: zookeeper
-    ports:
-      - "2181:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2088
+    ports:
+      - "2181:2181"
+    networks:
+      kafka-net:
+        ipv4_address: 172.20.0.10
+
   kafka:
     image: confluentinc/cp-enterprise-kafka:latest
     hostname: broker
     container_name: broker
     depends_on:
       - zookeeper
+    networks:
+      kafka-net:
+        ipv4_address: 172.20.0.11
     ports:
       - "29892:29892"
       - "9892:9892"
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ZOOPEEKER_CONNECT: 'zoopeeker:2181'
+      KAFKA_ZOOPEEKER_CONNECT: 172.20.0.10:2181
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29892,PLAINTEXT_HOST://localhost:9892
       KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTORY: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker:29892
-      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: zookeeper:2181
+      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: 172.20.0.10:2181
       CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
       CONFLUENT_METRICS_ENABLE: 'true'
       CONFLUENT_METRICS_SUPPORT_CUSTOMER_ID: 1
+
   schema-registry:
     image: confluentinc/cp-schema-registry:latest
     hostname: schema-registry
@@ -60,9 +68,14 @@ services:
       - "8081:8081"
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
-      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper: 2181'
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 172.20.0.10:2181
 
-
+networks:
+  kafka-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
 
 
 
