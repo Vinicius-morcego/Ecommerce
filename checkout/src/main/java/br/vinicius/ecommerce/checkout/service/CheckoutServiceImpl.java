@@ -25,13 +25,13 @@ public class CheckoutServiceImpl implements CheckoutService{
                 .code(UUID.randomUUID().toString())
                 .status(CheckoutEntity.Status.CREATED)
                 .build();
-        final CheckoutEntity entity = checkoutRepository.save(checkoutEntity);
+        final CheckoutEntity checkout = checkoutRepository.save(checkoutEntity);
 
-        final CheckoutCreatedEvent event = CheckoutCreatedEvent.newBuilder()
-                .setCheckoutCode(entity.getCode())
-                .setStatus(entity.getStatus())
+        final CheckoutCreatedEvent checkoutCreatedEvent = CheckoutCreatedEvent.newBuilder()
+                .setCheckoutCode(checkout.getCode())
+                .setStatus(checkout.getStatus().name())
                 .build();
-        checkoutCreatedSource.output().send(MessageBuilder.withPayload(event).build());
-        return Optional.of(entity);
+        checkoutCreatedSource.output().send(MessageBuilder.withPayload(checkoutCreatedEvent).build());
+        return Optional.of(checkoutEntity);
     }
 }
